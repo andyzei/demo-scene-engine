@@ -47,18 +47,12 @@ canvas#demo {
   gap: 24px;
 }
 
-#overlay .brand .edge-logo {
-  color: #0078D4;
-  font-weight: 700;
-  font-size: 1.3rem;
-  letter-spacing: 1px;
-}
-
+#overlay .brand .edge-logo,
 #overlay .brand .copilot-logo {
-  color: #7B61FF;
-  font-weight: 700;
-  font-size: 1.3rem;
-  letter-spacing: 1px;
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(1.1);
 }
 
 #overlay .brand .separator {
