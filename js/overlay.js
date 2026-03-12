@@ -4,6 +4,7 @@ export class Overlay {
     this.el = document.getElementById('overlay');
     this.visible = false;
     this.effectNameEl = this.el?.querySelector('.effect-name');
+    this.timerEl = this.el?.querySelector('.timer');
   }
 
   toggle() {
@@ -17,5 +18,15 @@ export class Overlay {
     if (this.effectNameEl) {
       this.effectNameEl.textContent = name;
     }
+  }
+
+  updateTimer(elapsed, duration) {
+    if (!this.timerEl) return;
+    const remaining = Math.max(0, Math.ceil(duration - elapsed));
+    const min = Math.floor(remaining / 60);
+    const sec = remaining % 60;
+    this.timerEl.textContent = min > 0
+      ? `${min}:${String(sec).padStart(2, '0')}`
+      : `0:${String(sec).padStart(2, '0')}`;
   }
 }

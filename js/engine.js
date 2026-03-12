@@ -139,6 +139,7 @@ class Engine {
       // Auto-advance timer
       this.effectTimer += dt;
       const duration = this.effects[this.currentIndex].duration;
+      this.overlay.updateTimer(this.effectTimer, duration);
       if (this.effectTimer >= duration) {
         this.switchEffect(1);
       }
