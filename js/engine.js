@@ -51,8 +51,6 @@ class Engine {
 
     window.addEventListener('resize', () => this.resize());
     window.addEventListener('keydown', (e) => this.onKey(e));
-    this.canvas.addEventListener('click', () => this.toggleFullscreen());
-
     this.loadEffect(0);
     requestAnimationFrame((t) => this.loop(t));
   }
