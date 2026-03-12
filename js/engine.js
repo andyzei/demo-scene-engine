@@ -16,6 +16,7 @@ import { MoireEffect } from './effects/moire.js';
 import { FractalEffect } from './effects/fractal.js';
 import { WireframeEffect } from './effects/wireframe.js';
 import { ParticlesEffect } from './effects/particles.js';
+import { PipesEffect } from './effects/pipes.js';
 
 const EFFECTS = [
   { name: 'Plasma',         cls: PlasmaEffect,     duration: 45 },
@@ -30,6 +31,7 @@ const EFFECTS = [
   { name: 'Fractal Zoom',   cls: FractalEffect,      duration: 60 },
   { name: '3D Wireframe',   cls: WireframeEffect,    duration: 40 },
   { name: 'Particle Swarm', cls: ParticlesEffect,    duration: 50 },
+  { name: '3D Pipes',       cls: PipesEffect,        duration: 45 },
 ];
 
 class Engine {
