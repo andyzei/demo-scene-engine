@@ -17,6 +17,7 @@ import { FractalEffect } from './effects/fractal.js';
 import { WireframeEffect } from './effects/wireframe.js';
 import { ParticlesEffect } from './effects/particles.js';
 import { PipesEffect } from './effects/pipes.js';
+import { TerrainEffect } from './effects/terrain.js';
 
 const EFFECTS = [
   { name: 'Plasma',         cls: PlasmaEffect,     duration: 45 },
@@ -32,6 +33,7 @@ const EFFECTS = [
   { name: '3D Wireframe',   cls: WireframeEffect,    duration: 40 },
   { name: 'Particle Swarm', cls: ParticlesEffect,    duration: 50 },
   { name: '3D Pipes',       cls: PipesEffect,        duration: 45 },
+  { name: 'Terrain',        cls: TerrainEffect,      duration: 50 },
 ];
 
 class Engine {
