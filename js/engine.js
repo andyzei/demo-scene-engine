@@ -9,7 +9,7 @@ import { StarfieldEffect } from './effects/starfield.js';
 import { FireEffect } from './effects/fire.js';
 import { RotozoomEffect } from './effects/rotozoom.js';
 import { MetaballsEffect } from './effects/metaballs.js';
-import { TunnelEffect } from './effects/tunnel.js';
+
 import { MatrixEffect } from './effects/matrix.js';
 import { SineScrollEffect } from './effects/sinescroll.js';
 import { MoireEffect } from './effects/moire.js';
@@ -23,7 +23,7 @@ const EFFECTS = [
   { name: 'Fire',           cls: FireEffect,         duration: 40 },
   { name: 'Rotozoom',       cls: RotozoomEffect,     duration: 35 },
   { name: 'Metaballs',      cls: MetaballsEffect,    duration: 45 },
-  { name: 'Tunnel',         cls: TunnelEffect,       duration: 40 },
+
   { name: 'Matrix Rain',    cls: MatrixEffect,       duration: 50 },
   { name: 'Sine Scroll',    cls: SineScrollEffect,   duration: 40 },
   { name: 'Moiré Patterns', cls: MoireEffect,        duration: 35 },
