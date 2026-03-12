@@ -2,6 +2,13 @@ const ASCII_GLYPHS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*+-=<>[]{}()/\\|~
 const KATAKANA_GLYPHS = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ';
 const GLYPHS = `${ASCII_GLYPHS}${KATAKANA_GLYPHS}`;
 const BRAND_STRINGS = ['COPILOT', 'EDGE', 'HACKATHON', '31337', 'MICROSOFT'];
+const BRAND_COLORS = {
+  COPILOT:   { r: 123, g: 97,  b: 255 }, // Copilot Purple
+  EDGE:      { r: 0,   g: 120, b: 212 }, // Edge Blue
+  HACKATHON: { r: 0,   g: 183, b: 195 }, // Teal
+  '31337':   { r: 0,   g: 255, b: 255 }, // Neon Cyan
+  MICROSOFT: { r: 0,   g: 120, b: 212 }, // Edge Blue
+};
 
 export class MatrixEffect {
   constructor() {
@@ -95,16 +102,25 @@ export class MatrixEffect {
 
         if (i === 0) {
           context.shadowBlur = 14;
-          context.shadowColor = '#39FF14';
-          context.fillStyle = step.brand ? '#FFFFFF' : '#D8FFD2';
+          if (step.brand && step.brandColor) {
+            context.shadowColor = `rgb(${step.brandColor.r},${step.brandColor.g},${step.brandColor.b})`;
+            context.fillStyle = '#FFFFFF';
+          } else {
+            context.shadowColor = '#39FF14';
+            context.fillStyle = '#D8FFD2';
+          }
         } else {
           const fade = 1 - i / column.trailLength;
           const alpha = Math.max(0.06, fade * fade * 0.95);
           context.shadowBlur = i < 3 ? 6 : 0;
-          context.shadowColor = '#39FF14';
-          context.fillStyle = step.brand
-            ? `rgba(166, 255, 180, ${Math.min(0.95, alpha + 0.08)})`
-            : `rgba(57, 255, 20, ${alpha})`;
+          if (step.brand && step.brandColor) {
+            const bc = step.brandColor;
+            context.shadowColor = `rgb(${bc.r},${bc.g},${bc.b})`;
+            context.fillStyle = `rgba(${bc.r},${bc.g},${bc.b},${Math.min(0.95, alpha + 0.15)})`;
+          } else {
+            context.shadowColor = '#39FF14';
+            context.fillStyle = `rgba(57, 255, 20, ${alpha})`;
+          }
         }
 
         context.fillText(step.char, column.x, y);
@@ -203,7 +219,7 @@ export class MatrixEffect {
       return;
     }
 
-    target.brand = { text: phrase, index: 0 };
+    target.brand = { text: phrase, index: 0, color: BRAND_COLORS[phrase] || BRAND_COLORS.EDGE };
     target.speed = Math.min(28, target.speed * this.randomRange(1.04, 1.18));
   }
 
@@ -211,10 +227,11 @@ export class MatrixEffect {
     if (column.brand && column.brand.index < column.brand.text.length) {
       const char = column.brand.text[column.brand.index];
       column.brand.index += 1;
+      const brandColor = column.brand.color;
       if (column.brand.index >= column.brand.text.length) {
         column.brand = null;
       }
-      return { char, brand: true };
+      return { char, brand: true, brandColor };
     }
 
     return this.makeGlyph();
