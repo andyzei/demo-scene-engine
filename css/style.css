@@ -67,17 +67,20 @@ canvas#demo {
   text-transform: uppercase;
 }
 
-#overlay .timer {
-  font-size: 1.4rem;
+#overlay .effect-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-family: 'Consolas', monospace;
-  color: #00FFFF;
-  letter-spacing: 2px;
-  min-width: 4ch;
-  text-align: center;
 }
 
 #overlay .effect-name {
   font-size: 0.85rem;
   color: #666;
-  font-family: 'Consolas', monospace;
+}
+
+#overlay .timer {
+  font-size: 0.8rem;
+  color: #444;
+  letter-spacing: 1px;
 }
