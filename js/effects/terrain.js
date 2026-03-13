@@ -154,6 +154,19 @@ export class TerrainEffect {
     this.colorCache = new Map();
     this.horizonColor = mixColor(DEEP_BLACK, EDGE_BLUE, 0.52);
     this.skyBase = '#0A0A0A';
+
+    // Rolling spheres
+    this.sphereRadius1 = 5;
+    this.sphereRadius2 = 4;
+    this.sphereDepth1 = 160;
+    this.sphereDepth2 = 100;
+    this.sphereRotation1 = 0;
+    this.sphereRotation2 = 0;
+    this.sphereTex1 = null;
+    this.sphereTex2 = null;
+    this.sphereTexturesReady = false;
+    this._sphereBuffer = null;
+    this._sphereBufferCtx = null;
   }
 
   init(canvas, ctx) {
@@ -165,6 +178,7 @@ export class TerrainEffect {
     this.bank = 0;
     this.colorCache.clear();
     this.resize(canvas, ctx);
+    if (!this.sphereTexturesReady) this._loadSphereTextures();
   }
 
   update(dt) {
@@ -185,6 +199,9 @@ export class TerrainEffect {
 
     const ride = this.noise.fbm(73.1, this.time * 0.09, 2) * 4 + Math.sin(this.time * 0.6) * 1.5;
     this.cameraHeight = this.baseCameraHeight + ride;
+
+    this.sphereRotation1 += (this.forwardSpeed / this.sphereRadius1) * delta;
+    this.sphereRotation2 += (this.forwardSpeed / this.sphereRadius2) * delta;
   }
 
   render(ctx = this.ctx) {
@@ -196,6 +213,7 @@ export class TerrainEffect {
     this.drawBackground(ctx);
     this.drawTerrainStrips(ctx);
     this.drawWireframe(ctx);
+    this._drawSpheres(ctx);
   }
 
   resize(canvas = this.canvas, ctx = this.ctx) {
@@ -260,6 +278,11 @@ export class TerrainEffect {
     this.rowScalesX = new Float32Array(0);
     this.rowScalesY = new Float32Array(0);
     this.rowAverageHeight = new Float32Array(0);
+    this._sphereBuffer = null;
+    this._sphereBufferCtx = null;
+    this.sphereTex1 = null;
+    this.sphereTex2 = null;
+    this.sphereTexturesReady = false;
     this.canvas = null;
     this.ctx = null;
   }
@@ -417,6 +440,224 @@ export class TerrainEffect {
     }
 
     ctx.restore();
+  }
+
+  _loadSphereTextures() {
+    const edgeImg = new Image();
+    const copilotImg = new Image();
+    let loaded = 0;
+
+    const onLoad = () => {
+      if (++loaded < 2) return;
+      this.sphereTex1 = this._createSphereTexture(edgeImg, EDGE_BLUE);
+      this.sphereTex2 = this._createSphereTexture(copilotImg, COPILOT_PURPLE);
+      this.sphereTexturesReady = true;
+    };
+
+    edgeImg.onload = onLoad;
+    copilotImg.onload = onLoad;
+    edgeImg.src = 'img/edge-logo.svg';
+    copilotImg.src = 'img/copilot-logo.svg';
+  }
+
+  _createSphereTexture(img, accent) {
+    const size = 128;
+    const c = document.createElement('canvas');
+    c.width = size;
+    c.height = size;
+    const tctx = c.getContext('2d');
+
+    tctx.clearRect(0, 0, size, size);
+
+    const pad = 20;
+    const maxDim = size - pad * 2;
+    const iw = img.naturalWidth || img.width || 1;
+    const ih = img.naturalHeight || img.height || 1;
+    const aspect = iw / ih;
+    let w, h;
+    if (aspect >= 1) { w = maxDim; h = maxDim / aspect; }
+    else { h = maxDim; w = maxDim * aspect; }
+    tctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+
+    return { data: tctx.getImageData(0, 0, size, size).data, size, accent };
+  }
+
+  _drawSpheres(ctx) {
+    if (!this.sphereTexturesReady || !ctx) return;
+
+    const t = this.time;
+    const horizonDrift = Math.sin(t * 0.2) * this.height * 0.01;
+
+    const worldX1 = this.cameraX - 10 + Math.sin(t * 0.4) * 20;
+    const worldZ1 = this.scroll + this.sphereDepth1;
+    const h1 = this.sampleHeight(worldX1, worldZ1);
+
+    const worldX2 = this.cameraX + 8 + Math.cos(t * 0.3) * 16;
+    const worldZ2 = this.scroll + this.sphereDepth2;
+    const h2 = this.sampleHeight(worldX2, worldZ2);
+
+    const spheres = [
+      this._projectSpherePoint(worldX1, h1 + this.sphereRadius1, this.sphereDepth1, this.sphereRadius1, horizonDrift, this.sphereTex1, this.sphereRotation1),
+      this._projectSpherePoint(worldX2, h2 + this.sphereRadius2, this.sphereDepth2, this.sphereRadius2, horizonDrift, this.sphereTex2, this.sphereRotation2),
+    ];
+
+    spheres.sort((a, b) => b.depth - a.depth);
+
+    for (const s of spheres) {
+      if (s.depth < this.nearZ || s.sr < 2) continue;
+      if (s.sx + s.sr < 0 || s.sx - s.sr > this.width) continue;
+      if (s.sy + s.sr < 0 || s.sy - s.sr > this.height) continue;
+      this._renderSphere(ctx, s);
+    }
+  }
+
+  _projectSpherePoint(worldX, sphereY, depth, radius, horizonDrift, tex, rotation) {
+    const localX = worldX - this.cameraX;
+    const scaleX = this.projectionX / depth;
+    const scaleY = this.projectionY / depth;
+    const maxRow = Math.max(1, this.rows - 1);
+    const fogT = Math.pow(clamp((depth - this.nearZ) / (maxRow * this.rowSpacing), 0, 1), 1.35);
+    const bankShift = this.bank * this.width * 0.055 * (1 - fogT * 0.45);
+
+    return {
+      sx: this.centerX + localX * scaleX + bankShift,
+      sy: this.horizonY + horizonDrift + (this.cameraHeight - sphereY) * scaleY,
+      sr: radius * scaleX,
+      depth,
+      fog: fogT,
+      tex,
+      rotation,
+    };
+  }
+
+  _renderSphere(ctx, s) {
+    const { sx, sy, sr, tex, rotation, fog } = s;
+    if (sr < 2) return;
+
+    const diameter = Math.ceil(sr * 2);
+    const halfD = diameter / 2;
+
+    if (!this._sphereBuffer || this._sphereBuffer.width < diameter || this._sphereBuffer.height < diameter) {
+      this._sphereBuffer = document.createElement('canvas');
+      this._sphereBufferCtx = this._sphereBuffer.getContext('2d');
+    }
+    this._sphereBuffer.width = diameter;
+    this._sphereBuffer.height = diameter;
+
+    const imageData = this._sphereBufferCtx.createImageData(diameter, diameter);
+    const data = imageData.data;
+
+    const cosR = Math.cos(rotation);
+    const sinR = Math.sin(rotation);
+
+    // Normalized light direction (upper-left, into screen)
+    const _lx = -0.4, _ly = -0.6, _lz = 0.75;
+    const ll = 1 / Math.sqrt(_lx * _lx + _ly * _ly + _lz * _lz);
+    const nlx = _lx * ll, nly = _ly * ll, nlz = _lz * ll;
+
+    const texData = tex ? tex.data : null;
+    const texSize = tex ? tex.size : 0;
+    const accent = tex ? tex.accent : EDGE_BLUE;
+
+    // Each logo cap covers ~60° from the pole
+    const capCos = 0.5;
+    const capExtent = Math.sqrt(1 - capCos * capCos);
+
+    const hcr = this.horizonColor.r, hcg = this.horizonColor.g, hcb = this.horizonColor.b;
+    const fogF = fog > 0.01 ? fog * 0.8 : 0;
+
+    for (let py = 0; py < diameter; py++) {
+      const ny = (2 * (py + 0.5) / diameter) - 1;
+      const ny2 = ny * ny;
+
+      for (let px = 0; px < diameter; px++) {
+        const nx = (2 * (px + 0.5) / diameter) - 1;
+        const r2 = nx * nx + ny2;
+        if (r2 >= 1) continue;
+
+        const nz = Math.sqrt(1 - r2);
+
+        // Rotate into sphere local frame (Y-axis roll)
+        const rx = nx * cosR + nz * sinR;
+        const rz = -nx * sinR + nz * cosR;
+
+        // Base color: dark with accent tint
+        let cr = accent.r * 0.08 + 8;
+        let cg = accent.g * 0.08 + 8;
+        let cb = accent.b * 0.08 + 10;
+
+        // Sample logo on front cap (rz ~ +1) and back cap (rz ~ -1)
+        if (texData) {
+          let capU = -1, capV = -1;
+          if (rz > capCos) {
+            capU = (rx / capExtent) * 0.5 + 0.5;
+            capV = (ny / capExtent) * 0.5 + 0.5;
+          } else if (rz < -capCos) {
+            capU = (-rx / capExtent) * 0.5 + 0.5;
+            capV = (ny / capExtent) * 0.5 + 0.5;
+          }
+
+          if (capU >= 0 && capU < 1 && capV >= 0 && capV < 1) {
+            const tx = (capU * texSize) | 0;
+            const ty = (capV * texSize) | 0;
+            const ti = (ty * texSize + tx) * 4;
+            const ta = texData[ti + 3] / 255;
+            if (ta > 0.02) {
+              const glow = 1.4;
+              cr = cr * (1 - ta) + texData[ti] * glow * ta;
+              cg = cg * (1 - ta) + texData[ti + 1] * glow * ta;
+              cb = cb * (1 - ta) + texData[ti + 2] * glow * ta;
+            }
+          }
+        }
+
+        // Diffuse lighting
+        const diff = Math.max(0, nx * nlx + ny * nly + nz * nlz);
+        const lit = 0.15 + diff * 0.85;
+
+        // Specular (Phong)
+        const ndotl = nx * nlx + ny * nly + nz * nlz;
+        const specR = ndotl > 0 ? Math.pow(Math.max(0, 2 * ndotl * nz - nlz), 48) : 0;
+
+        cr = cr * lit + specR * 160;
+        cg = cg * lit + specR * 160;
+        cb = cb * lit + specR * 200;
+
+        // Fresnel rim glow (neon cyan)
+        const fresnel = Math.pow(1 - nz, 3.5);
+        cr += fresnel * NEON_CYAN.r * 0.3;
+        cg += fresnel * NEON_CYAN.g * 0.3;
+        cb += fresnel * NEON_CYAN.b * 0.3;
+
+        // Fog
+        if (fogF > 0) {
+          cr = cr * (1 - fogF) + hcr * fogF;
+          cg = cg * (1 - fogF) + hcg * fogF;
+          cb = cb * (1 - fogF) + hcb * fogF;
+        }
+
+        const idx = (py * diameter + px) * 4;
+        data[idx]     = cr > 255 ? 255 : cr < 0 ? 0 : cr | 0;
+        data[idx + 1] = cg > 255 ? 255 : cg < 0 ? 0 : cg | 0;
+        data[idx + 2] = cb > 255 ? 255 : cb < 0 ? 0 : cb | 0;
+        data[idx + 3] = 255;
+      }
+    }
+
+    this._sphereBufferCtx.putImageData(imageData, 0, 0);
+
+    // Ground shadow
+    ctx.save();
+    ctx.globalAlpha = 0.35 * (1 - fog);
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(sx, sy + sr * 0.85, sr * 0.75, sr * 0.2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Composite sphere onto scene
+    ctx.drawImage(this._sphereBuffer, 0, 0, diameter, diameter,
+      sx - halfD, sy - halfD, diameter, diameter);
   }
 
   sampleHeight(x, z) {

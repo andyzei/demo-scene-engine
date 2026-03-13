@@ -2,7 +2,8 @@
 export class Overlay {
   constructor() {
     this.el = document.getElementById('overlay');
-    this.visible = false;
+    this.visible = true;
+    if (this.el) this.el.classList.add('visible');
     this.effectNameEl = this.el?.querySelector('.effect-name');
     this.timerEl = this.el?.querySelector('.timer');
   }

@@ -6,7 +6,7 @@ const NEON_CYAN = { r: 0, g: 255, b: 255 };
 const NEON_MAGENTA = { r: 255, g: 0, b: 255 };
 const DEEP_BLACK = { r: 10, g: 10, b: 10 };
 
-const RENDER_SCALE = 0.25;
+const RENDER_SCALE = 0.375;
 const MAX_DEPTH = 2;
 const FOG_DIST = 30;
 const EPSILON = 0.001;

@@ -20,6 +20,7 @@ import { PipesEffect } from './effects/pipes.js';
 import { TerrainEffect } from './effects/terrain.js';
 import { RaytraceEffect } from './effects/raytrace.js';
 import { CityEffect } from './effects/city.js';
+import { ToastersEffect } from './effects/toasters.js';
 
 const EFFECTS = [
   { name: 'Plasma',         cls: PlasmaEffect,     duration: 45 },
@@ -38,6 +39,7 @@ const EFFECTS = [
   { name: 'Terrain',        cls: TerrainEffect,      duration: 50 },
   { name: 'Ray Tracing',   cls: RaytraceEffect,     duration: 50 },
   { name: 'Cyber City',    cls: CityEffect,         duration: 50 },
+  { name: 'Flying Toasters', cls: ToastersEffect,  duration: 45 },
 ];
 
 class Engine {

@@ -23,7 +23,7 @@ canvas#demo {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 18px 32px;
+  padding: 23px 42px;
   background: rgba(10, 10, 10, 0.75);
   backdrop-filter: blur(8px);
   color: #fff;
@@ -42,14 +42,15 @@ canvas#demo {
 }
 
 #overlay .brand {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 31px;
 }
 
 #overlay .brand .edge-logo,
 #overlay .brand .copilot-logo {
-  height: 32px;
+  height: 42px;
   width: auto;
   object-fit: contain;
   filter: brightness(1.1);
@@ -57,30 +58,34 @@ canvas#demo {
 
 #overlay .brand .separator {
   color: #555;
-  font-size: 1.5rem;
+  font-size: 1.95rem;
 }
 
 #overlay .title {
-  font-size: 1.1rem;
+  font-size: 1.43rem;
   color: #ccc;
-  letter-spacing: 2px;
+  letter-spacing: 2.6px;
   text-transform: uppercase;
+  white-space: nowrap;
+  text-align: center;
 }
 
 #overlay .effect-info {
+  flex: 1;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 16px;
   font-family: 'Consolas', monospace;
 }
 
 #overlay .effect-name {
-  font-size: 0.85rem;
+  font-size: 1.1rem;
   color: #666;
 }
 
 #overlay .timer {
-  font-size: 0.8rem;
+  font-size: 1.04rem;
   color: #444;
-  letter-spacing: 1px;
+  letter-spacing: 1.3px;
 }
