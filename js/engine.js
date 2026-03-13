@@ -18,6 +18,8 @@ import { WireframeEffect } from './effects/wireframe.js';
 import { ParticlesEffect } from './effects/particles.js';
 import { PipesEffect } from './effects/pipes.js';
 import { TerrainEffect } from './effects/terrain.js';
+import { RaytraceEffect } from './effects/raytrace.js';
+import { CityEffect } from './effects/city.js';
 
 const EFFECTS = [
   { name: 'Plasma',         cls: PlasmaEffect,     duration: 45 },
@@ -34,6 +36,8 @@ const EFFECTS = [
   { name: 'Particle Swarm', cls: ParticlesEffect,    duration: 50 },
   { name: '3D Pipes',       cls: PipesEffect,        duration: 45 },
   { name: 'Terrain',        cls: TerrainEffect,      duration: 50 },
+  { name: 'Ray Tracing',   cls: RaytraceEffect,     duration: 50 },
+  { name: 'Cyber City',    cls: CityEffect,         duration: 50 },
 ];
 
 class Engine {
