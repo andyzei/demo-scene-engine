@@ -14,7 +14,7 @@ import { MatrixEffect } from './effects/matrix.js';
 import { SineScrollEffect } from './effects/sinescroll.js';
 import { MoireEffect } from './effects/moire.js';
 import { FractalEffect } from './effects/fractal.js';
-import { WireframeEffect } from './effects/wireframe.js';
+
 import { ParticlesEffect } from './effects/particles.js';
 import { PipesEffect } from './effects/pipes.js';
 import { TerrainEffect } from './effects/terrain.js';
@@ -34,7 +34,7 @@ const EFFECTS = [
   { name: 'Sine Scroll',    cls: SineScrollEffect,   duration: 40 },
   { name: 'Moiré Patterns', cls: MoireEffect,        duration: 35 },
   { name: 'Fractal Zoom',   cls: FractalEffect,      duration: 60 },
-  { name: '3D Wireframe',   cls: WireframeEffect,    duration: 40 },
+
   { name: 'Particle Swarm', cls: ParticlesEffect,    duration: 50 },
   { name: '3D Pipes',       cls: PipesEffect,        duration: 45 },
   { name: 'Terrain',        cls: TerrainEffect,      duration: 50 },
